@@ -15,8 +15,7 @@ F = Flickering yellow light to simulate fireplaces, campfires, etc
 C = Custom
 
 Example string: "LLOFL SSFLO OOLSS FSSSL"  
-This example defines a string of 20 LEDs. The first two (LL) are constantly lit, the next one (O) is turned off (not being used), 
-then there's a flickering fire (F) and another constantly lit one (L). 
+This example defines a string of 20 LEDs. The first five are thus: two (LL) are constantly lit, the next one (O) is turned off (not being used), then there's a flickering fire (F) and another constantly lit one (L). 
 Blanks can inserted anywhere for clarity; they are stripped out during operation.
   
 The length of the text string is used to allocate the CRGB array dynamically. I know dynamic allocation is frowned upon 
