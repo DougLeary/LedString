@@ -11,7 +11,7 @@ The behavior of a string of LEDs is specified using a character string, one char
 L = always Lit (white)  
 O = always Off (black) - in other words, not used  
 S = Switched on and off at random to simulate human activity  
-F = Flickering yellow light to simulate fireplaces, campfires, etc  
+F = Flickering yellow light to simulate fireplaces, campfires, etc. Fire LEDs flicker independently.   
 C = Custom
 
 Example string: "LLOFL SSFLO OOLSS FSSSL"  
