@@ -9,7 +9,7 @@ The behavior of a string of LEDs is specified using a character string, one char
 
 #### Behaviors
 L = always Lit (white)  
-O = always Off (black) - in other words, not used (uppercase "O" not zero) 
+O = always Off (black) - in other words, not used (uppercase "O" not zero)  
 S = Switched on and off at random to simulate human activity  
 F = Flickering yellow light to simulate fireplaces, campfires, etc. Fire LEDs flicker independently.   
 C = Custom
