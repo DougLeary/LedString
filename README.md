@@ -35,19 +35,19 @@ instance of LedString.
 LedString lights;
 
 void setup() {
-  lights.begin("LLOFL SSFLO OOLSS FSSSL");
-  lights.start();
+  lights.doSetup("LLOFL SSFLO OOLSS FSSSL");
+  lights.doStart();
 } 
 
 void loop() {
-  lights.loop();
+  lights.doLoop();
 }
 ```
 
 #### Explanation
-**lights.begin** defines the LED behaviors.  
-**lights.start** sets all the Lit and Off leds because they won't change, and turns the Switched leds on.  
-**lights.loop**  changes the values of Fires, Switched leds and Customs, when it's time to do so.
+**lights.doSetup** defines the LED behaviors.  
+**lights.doStart** sets all the Lit and Off leds because they won't change, and turns the Switched leds on.  
+**lights.doLoop**  changes the values of Fires, Switched leds and Customs, when it's time to do so.
 
 Note: Custom behaviors are currently implemented as a hard-coded method in the class itself.  
 To do: accept a pointer to a custom method.
