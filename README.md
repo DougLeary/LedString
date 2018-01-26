@@ -25,7 +25,7 @@ The original goal was to control multiple strings of leds with a single Arduino 
 As of this writing there is no way for DATA_PIN to be a property that would vary from one object instance to another. 
 So for now each string of leds needs its own controller, and an app can only use one instance of LedString. 
 
-### Simple Example
+### Usage Example
 
 ```
 #include "FastLED.h"
@@ -50,5 +50,5 @@ void loop() {
 Note: Custom behaviors are currently implemented as a hard-coded method in the class itself.  
 To do: accept a pointer to a custom method.
 
-## Usage
+## Notes
 I have tested this class with an Arduino and a 50-led WS2811 string. The wiring is simple: connect the LED string's control line to pin 3 (or D3 on ESP8266). Connect an adequate 5V power supply to the leds and tie its ground to the Arduino ground. Then power up. 
