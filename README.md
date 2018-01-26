@@ -9,13 +9,13 @@ The behavior of a string of LEDs is specified using a character string, one char
 
 #### Behaviors
 L = always Lit (white)  
-O = always Off (black) - in other words, not used  
+O = always Off (black) - in other words, not used (uppercase "O" not zero) 
 S = Switched on and off at random to simulate human activity  
 F = Flickering yellow light to simulate fireplaces, campfires, etc. Fire LEDs flicker independently.   
 C = Custom
 
 Example string: "LLOFL SSFLO OOLSS FSSSL"  
-This example defines a string of 20 LEDs. The first five are thus: two (LL) are constantly lit, the next one (O) is turned off (not being used), then there's a flickering fire (F) and another constantly lit one (L). 
+This example defines a string of 20 LEDs. The first five are thus: two are constantly lit (LL), the next one is turned off (O), then there's a flickering fire (F) and another constantly lit one (L). 
 Blanks can inserted anywhere for clarity; they are stripped out during operation.
   
 The length of the text string is used to allocate the CRGB array dynamically. I know dynamic allocation is frowned upon 
