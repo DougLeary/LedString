@@ -45,11 +45,11 @@ void loop() {
 ```
 
 #### Explanation
-**lights.begin** defines the LED behaviors as chars. Blanks can be inserted in the string for clarity; they get stripped out.  
-**lights.start** sets the Lit or Off leds, because they won't change, and turns on the Switched ones.  
-**lights.loop** waits until it's time to refresh the leds and makes the changes (flickering fires, random switching on and off, and Custom behavior).  
+**lights.begin** defines the LED behaviors.  
+**lights.start** sets all the Lit and Off leds because they won't change, and turns the Switched leds on.  
+**lights.loop**  changes the values of Fires, Switched leds and Customs, when it's time to do so.
 
-Custom behaviors are currently implemented as a hard-coded method in the class itself.  
+Note: Custom behaviors are currently implemented as a hard-coded method in the class itself.  
 To do: accept a pointer to a custom method.
 
 
