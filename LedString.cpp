@@ -7,18 +7,6 @@ Tested on Arduino Uno and NodeMCU 1.0 (ESP-12E)
 #include "FastLED.h"
 #include "LedString.h"
 
-CRGB* leds = 0;
-
-void LedString::doSetup(String pattern) {
-  _pattern = pattern;
-  _pattern.replace(" ", "");
-  _pattern.toUpperCase();
-  _length = _pattern.length();
-  leds = (CRGB*)malloc(_length * sizeof(CRGB));
-  FastLED.addLeds<WS2811, DATA_PIN, RGB>(leds, _length);
-  setupSwitches();
-}
-
 void LedString::flicker(int led) {
   int value = random(FIRE_MIN, FIRE_MAX);
   // occasional intense flicker
@@ -32,7 +20,9 @@ void LedString::flicker(int led) {
   FastLED.show();
 }
 
-void LedString::doCustom() {
+void LedString::setCustom(LedStringCustomFunction custom) {
+  //void (*doCustom)() = custom;
+  doCustom = custom;
 }
 
 bool LedString::isOn(int led) {
@@ -130,6 +120,16 @@ void LedString::setupSwitches() {
   nextSwitchTime = millis();
 }
 
+void LedString::doSetup(String pattern) {
+  _pattern = pattern;
+  _pattern.replace(" ", "");
+  _pattern.toUpperCase();
+  _length = _pattern.length();
+  leds = (CRGB*)malloc(_length * sizeof(CRGB));
+  FastLED.addLeds<WS2811, DATA_PIN, RGB>(leds, _length);
+  setupSwitches();
+}
+
 void LedString::doStart() {
   turnAllOff();
   turnLitOrSwitchedOn();
@@ -143,9 +143,11 @@ void LedString::doStart() {
     case 'F':
       flicker(i);
       break;
+    case 'C':
+      doCustom(i);
+      break;
     }
   }
-  doCustom();
 }
 
 void LedString::doLoop() {
@@ -162,8 +164,10 @@ void LedString::doLoop() {
       case 'F':
         flicker(i);
         break;
+      case 'C':
+        doCustom(i);
+        break;
       }
     }
-    doCustom();
   }
 }

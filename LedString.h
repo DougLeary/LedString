@@ -2,6 +2,8 @@
 #ifndef LedString_h
 #define LedString_h
 
+#include "FastLED.h"
+
 // detect ESP8266, otherwise assume Arduino
 #if defined(ESP8266)
 #define DATA_PIN D3
@@ -9,9 +11,12 @@
 #define DATA_PIN 3
 #endif
 
+typedef void (*LedStringCustomFunction)(int);
+
 class LedString
 {
 public:
+  CRGB* leds = 0;
   long lastEventTime = 0L;
   int numSwitches = 0;
   int switchIndex = 0;
@@ -22,9 +27,15 @@ public:
   void doStart();
   void doLoop();
 
-private:
-  // dummy pointer to the leds array to satisfy the compiler; actual array will be redefined at runtime when we know the size
+  bool isOn(int led);
+  void turnOn(int led);
+  void turnOff(int led);
+  void turnAllOn();
+  void turnAllOff();
 
+  void setCustom(LedStringCustomFunction);   // accepts a function to be called for Custom behavior
+
+private:
   String _pattern;
   int _length;
   int FIRE_MIN = 150;      // min/max brightness range of normally flickering fire
@@ -40,17 +51,12 @@ private:
   long SWITCH_MAX = 5000L;
 
   void flicker(int led);
-  void doCustom();
-  bool isOn(int led);
-  void turnOn(int led);
-  void turnOff(int led);
-  void turnAllOn();
-  void turnAllOff();
   void turnLitOn();
   void turnLitOrSwitchedOn();
   bool isEventTime();
   void checkSwitch(int led);
   void setupSwitches();
+  LedStringCustomFunction doCustom;
 };
 
 #endif
