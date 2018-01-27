@@ -46,7 +46,7 @@ void loop() {
 **lights.doLoop**  changes the values of Fires, Switched leds and Customs, when it's time to do so.
 
 ## Custom Behavior
-Custom behavior is a limited way to add more lighting options. To implement a custom behavior, declare a void function that takes one int argument (the led number). This is the led number. After calling lights.doSetup() call lights.setCustom(yourCustomFunction). Your function will be called for every led whose behavior is specified with a "C". There are a few utility functions in LedString you can use in your function, such as turnOn(led) and turnOff(led), and you can reference lights.leds[n] for calling CRGB and CHSV functions. For more information see the CustomBehavior example.  
+Custom behavior is a limited way to add more lighting options. If you write a void function that takes one int argument (the led number), and call **lights.setCustom**(yourFunction), your function will be called for every led whose behavior is specified with a "C". There are a few utility functions in LedString you can use within your function, such as turnOn(led) and turnOff(led), and you can reference lights.leds[n] for calling CRGB and CHSV functions. See the CustomBehavior example.  
 
 ## Notes
 To control a 50-led WS2811 string, the wiring is straightforward: connect the LED string's control line to pin 3, connect an adequate 5V power supply to the LEDs, and tie its ground to the Arduino ground.  
