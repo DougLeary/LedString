@@ -51,4 +51,5 @@ Note: Custom behaviors are currently implemented as a hard-coded method in the c
 To do: accept a pointer to a custom method.
 
 ## Notes
-I have tested this class with an Arduino and a 50-led WS2811 string. The wiring is simple: connect the LED string's control line to pin 3 (or D3 on ESP8266). Connect an adequate 5V power supply to the leds and tie its ground to the Arduino ground. Then power up. 
+To control a 50-led WS2811 string, the wiring is straightforward: connect the LED string's control line to pin 3, connect an adequate 5V power supply to the LEDs, and tie its ground to the Arduino ground.  
+I have powered a string of 8 leds cut off a 50-led string directly off an Arduino. 
