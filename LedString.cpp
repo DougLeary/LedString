@@ -21,7 +21,6 @@ void LedString::flicker(int led) {
 }
 
 void LedString::setCustom(LedStringCustomFunction custom) {
-  //void (*doCustom)() = custom;
   doCustom = custom;
 }
 
@@ -120,7 +119,11 @@ void LedString::setupSwitches() {
   nextSwitchTime = millis();
 }
 
+void LedString::dummyCustom(int led) {
+}
+
 void LedString::doSetup(String pattern) {
+  setCustom(dummyCustom); 
   _pattern = pattern;
   _pattern.replace(" ", "");
   _pattern.toUpperCase();

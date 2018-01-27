@@ -33,6 +33,7 @@ public:
   void turnAllOn();
   void turnAllOff();
 
+  
   void setCustom(LedStringCustomFunction);   // accepts a function to be called for Custom behavior
 
 private:
@@ -57,6 +58,7 @@ private:
   void checkSwitch(int led);
   void setupSwitches();
   LedStringCustomFunction doCustom;
+  static void dummyCustom(int led);
 };
 
 #endif
