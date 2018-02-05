@@ -13,7 +13,8 @@ C = Custom behavior
 
 Behavior for the set of LEDs is defined using a character string, one char per LED.  
 Example string: "LLOFL SSFLO OOLSS FSSSL"  
-This example defines a behavior pattern for 20 LEDs. The first five are thus: two are constantly lit (LL), the next one is turned off (O), then there's a flickering fire (F) and another constantly lit one (L). 
+This example defines a behavior pattern for 20 LEDs. First five:  
+ two constantly lit (LL), next one turned off (O), flickering fire (F), another constantly lit one (L).  
 Blanks can inserted anywhere for clarity; they are stripped out during operation.
   
 The length of the text string is used to allocate the CRGB array dynamically. Dynamic allocation is generally frowned upon 
