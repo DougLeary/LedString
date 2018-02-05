@@ -20,7 +20,7 @@ Blanks can inserted anywhere for clarity; they are stripped out during operation
 The length of the text string is used to allocate the CRGB array dynamically. Dynamic allocation is generally frowned upon 
 in Arduino code because of the potential for memory fragmentation, but this step is only executed once in the sketch setup.
 
-The original goal was to control multiple strings of leds with a single Arduino or ESP8266, using a different DATA_PIN for each string. Unfortunately, FastLED requires specifying DATA_PIN as a constant for purposes of compile-time optimization. 
+The original goal was to control multiple strings of leds with a single Arduino or ESP8266, using a different DATA_PIN for each string. However, FastLED requires specifying DATA_PIN as a constant for purposes of compile-time optimization. 
 As of this writing there is no way for DATA_PIN to be a property that would vary from one object instance to another. 
 So for now each string of leds needs its own controller, and an app can only use one instance of LedString. 
 
