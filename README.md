@@ -32,19 +32,15 @@ So for now each string of leds needs its own controller, and an app can only use
 LedString lights;
 
 void setup() {
-  lights.doSetup("LLOFL SSFLO OOLSS FSSSL");
-  lights.doStart();
+  lights.doSetup("LLOFL SSFLO OOLSS FSSSL");    // define LED behaviors
+  lights.doStart();                             // set Lit and Off leds, which won't change;
+                                                // turn Switched leds on
 } 
 
 void loop() {
-  lights.doLoop();
+  lights.doLoop();      // change the values of Fires, Swiched leds and Customs if it's time to do so
 }
 ```
-
-#### Explanation
-**lights.doSetup** defines the LED behaviors.  
-**lights.doStart** sets all the Lit and Off leds because they won't change, and turns the Switched leds on.  
-**lights.doLoop**  changes the values of Fires, Switched leds and Customs, when it's time to do so.
 
 ## Custom Behavior
 Custom behavior is a limited way to add more lighting options. If you write a void function that takes one int argument (the led number), and call **lights.setCustom**(yourFunction), your function will be called for every led whose behavior is specified with a "C". There are a few utility functions in LedString you can use within your function, such as turnOn(led) and turnOff(led), and you can reference lights.leds[n] for calling CRGB and CHSV functions. See the CustomBehavior example.  
@@ -52,3 +48,5 @@ Custom behavior is a limited way to add more lighting options. If you write a vo
 ## Notes
 To control a 50-led WS2811 string, the wiring is straightforward: connect the LED string's control line to pin 3, connect an adequate 5V power supply to the LEDs, and tie its ground to the Arduino ground.  
 I have powered a string of 8 leds cut off a 50-led string directly off an Arduino. 
+
+The fire flicker interval controls the timing of the refresh cycle. When doLoop() is called it checks whether it's time for the fires to flicker. If so (whether there are any fires or not), it makes a pass through the behavior string and updates fires and any other leds that need updating at that time. 
