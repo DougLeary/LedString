@@ -11,16 +11,13 @@ S = Switched on and off at random to give the appearance of human activity.
 F = Flickering yellow light to simulate fireplaces, campfires, etc. Fire LEDs flicker independently.   
 C = Custom behavior
 
-Behavior for individual LEDs is defined using a character string, one character per LED. Blanks can be inserted anywhere for readability. Example:
-```
-  lights.doSetup("LLOFL SSFLO OOLSS FSSSL");"LLOFL SSFLO OOLSS FSSSL"  
-```
+Behavior for individual LEDs is defined using a character string, one character per LED. Blanks can be inserted anywhere for readability. Example: ```  lights.doSetup("LLOFL SSFLO OOLSS FSSSL");```
     
-This defines a behavior pattern for 20 LEDs.  
-  First two (LL): constantly lit
-  Third (O): always off
-  Fourth (F): flickering fire
-  Fifth (L): constantly lit
+This example defines a behavior pattern for 20 LEDs.  
+  First two (LL): constantly lit  
+  Third (O): always off  
+  Fourth (F): flickering fire  
+  Fifth (L): constantly lit  
   ... and so on
   
 The length of the text string is used to allocate the CRGB array dynamically. Dynamic allocation is generally frowned upon 
