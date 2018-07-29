@@ -7,7 +7,7 @@ This class does not do animations as such; it assigns a predefined behavior to e
 #### Behaviors
 L = always Lit (white)  
 O = always Off (black) - in other words, not used (uppercase "O" not zero)  
-S = Switched on and off at random to give the appearance of human activity.
+S = Switched on and off at random to give the appearance of human activity.  
 F = Flickering yellow light to simulate fireplaces, campfires, etc. Fire LEDs flicker independently.   
 C = Custom behavior
 
