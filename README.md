@@ -30,7 +30,7 @@ The original goal was to control multiple strings of leds with a single Arduino 
 As of this writing there is no way for DATA_PIN to be a property that would vary from one object instance to another. 
 So for now each string of leds needs its own controller, and an app can only use one instance of LedString. 
 
-Running multiple strings on one controller should be a matter of using an external multiplexing circuit, using a couple other pins for addressing, but I have not tried to do this yet. 
+Running multiple strings on one controller should still be possible if an external multiplexing circuit is used to connect selected LED strings to DATA_PIN, using a couple other pins for addressing, but I have not tried to do this yet. 
 
 ### Usage Example
 
