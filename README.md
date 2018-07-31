@@ -34,7 +34,7 @@ Running multiple strings on one controller should still be possible by using an 
 ### Usage Example
 
 ```
-#include "FastLED.h"
+#include "LedString.h"
 
 LedString lights;
 
