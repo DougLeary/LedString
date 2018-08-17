@@ -23,7 +23,7 @@ This example defines a behavior pattern for 20 LEDs.
 The length of the text string is used to allocate the CRGB array dynamically. Dynamic allocation is generally frowned upon 
 in Arduino code because of the potential for memory fragmentation, but this step is only executed once in the sketch setup.
 
-This code works on Arduino and ESP9266. Connect your LED string's data line to pin 3 on an Arduino, or pin D3 on an ESP8266. 
+This code works on Arduino and ESP8266. Connect your LED string's data line to pin 3 on an Arduino, or pin D3 on an ESP8266. 
 
 The original goal was to control multiple strings of leds with a single controller, using a different DATA_PIN for each string. However, FastLED requires specifying DATA_PIN as a constant for purposes of compile-time optimization. 
 As of this writing there is no way for DATA_PIN to be a property that would vary from one object instance to another. 
