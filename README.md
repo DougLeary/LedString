@@ -2,13 +2,13 @@
 FastLED wrapper to simplify lighting for model towns, castles, villages.
 
 This wrapper class uses FastLED to set up WS2811 lighting for buildings in a model town, medieval village, etc. 
-This class does not do animations as such; it assigns a predefined behavior to each led, and that led is lit accordingly.
+LEDs are animated individually by assigning a predefined behavior to each led.
 
 #### Behaviors
 L = always Lit (white)  
 O = always Off (black) - in other words, not used (uppercase "O" not zero)  
 S = Switched on and off semi-randomly to give an appearance of habitation.  
-F = Flickering yellow light to simulate fireplaces, campfires, etc. Fire LEDs flicker independently.   
+F = Flickering yellow light to simulate fireplaces, campfires, etc. Fire LEDs flicker independently of each other.   
 C = Custom behavior
 
 Behavior for individual LEDs is defined using a character string, one character per LED. Blanks can be inserted anywhere for readability. Example: ```  lights.doSetup("LLOFL SSFLO OOLSS FSSSL");```
