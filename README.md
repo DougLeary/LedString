@@ -7,7 +7,7 @@ LEDs are animated individually by assigning a predefined behavior to each led.
 #### Behaviors
 L = always Lit (white)  
 O = always Off (black) - in other words, not used (uppercase "O" not zero)  
-S = Switched on and off semi-randomly to give an appearance of habitation. At a random time between SWITCH_MIN and SWITCH_MAX, one randomly chosen led marked "S" is toggled on or off.   
+S = Switched on and off semi-randomly to give an appearance of habitation. At a random interval of SWITCH_MIN..SWITCH_MAX milliseconds, one randomly chosen led marked "S" is toggled on or off.   
 F = Flickering yellow light to simulate fireplaces, campfires, etc. Fire LEDs flicker independently of each other.   
 C = Custom behavior
 
