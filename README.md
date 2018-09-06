@@ -7,21 +7,24 @@ LEDs are animated individually by assigning a predefined behavior to each led.
 #### Behaviors
 L = always Lit (white)  
 O = always Off (black) - in other words, not used (uppercase "O" not zero)  
-S = Switched on and off semi-randomly to give an appearance of habitation.  
+S = Switched on and off semi-randomly to give an appearance of habitation. At a random time between SWITCH_MIN and SWITCH_MAX, one randomly chosen led marked "S" is toggled on or off.   
 F = Flickering yellow light to simulate fireplaces, campfires, etc. Fire LEDs flicker independently of each other.   
 C = Custom behavior
 
-Behavior for individual LEDs is defined using a character string, one character per LED. Blanks can be inserted anywhere for readability. Example: ```  lights.doSetup("LLOFL SSFLO OOLSS FSSSL");```
+Behavior for individual LEDs is defined using a character string, one character per LED. Blanks can be inserted anywhere for readability.
+
+Example: ```  lights.doSetup("LLOFL SSFLO OOLSS FSSSL");```
     
 This example defines a behavior pattern for 20 LEDs.  
-  First two (LL): constantly lit  
-  Third (O): always off  
-  Fourth (F): flickering fire  
-  Fifth (L): constantly lit  
+  1,2 (LL): constantly lit  
+  3 (O): always off  
+  4 (F): flickering fire  
+  5 (L): constantly lit  
+  6,7 (SS): turned on and off semi-randomly  
   ... and so on
   
-The length of the text string is used to allocate the CRGB array dynamically. Dynamic allocation is generally frowned upon 
-in Arduino code because of the potential for memory fragmentation, but this step is only executed once in the sketch setup.
+The length of the text string determines the number of LEDs animated. If there are more LEDs on the string, they are turned off. [The length of the text string is used to allocate FastLED's internal CRGB array dynamically. Dynamic allocation is generally frowned upon 
+in Arduino code because of the potential for memory fragmentation, but since this step is executed only once in the sketch it shouldn't be a problem.]
 
 This code works on Arduino and ESP8266. Connect your LED string's data line to pin 3 on an Arduino, or pin D3 on an ESP8266. 
 
