@@ -1,7 +1,12 @@
 /*
 LedString class by Doug Leary 2018
 Requires FastLED library
-Tested on Arduino Uno and NodeMCU 1.0 (ESP-12E)
+Tested Controllers:
+Arduino Uno
+NodeMCU 1.0 (ESP-12E)
+Tested LED devices tested:
+WS2811
+NEOPIXEL ring
 */
 
 #include "FastLED.h"
@@ -20,8 +25,12 @@ void LedString::flicker(int led) {
   FastLED.show();
 }
 
-void LedString::setCustom(LedStringCustomFunction custom) {
-  doCustom = custom;
+void LedString::setCustom(LedStringCustomFunction f) {
+  customHandler = f;
+}
+
+void LedString::setCycleSetup(LedStringCycleSetup f) {
+  cycleSetup = f;
 }
 
 bool LedString::isOn(int led) {
@@ -80,14 +89,12 @@ void LedString::turnLitOrSwitchedOn() {
 bool LedString::isEventTime() {
   long msNow = millis();
   long gap = msNow - lastEventTime;
-  if (gap < 0) {
-    gap = FLICKER_RATE;
-  }
   if (gap >= FLICKER_RATE) {
     lastEventTime = msNow;
     return true;
   }
   else {
+    // note: this includes when millis() rolls over to 0, because gap will be < 0 
     return false;
   }
 }
@@ -122,20 +129,25 @@ void LedString::setupSwitches() {
 void LedString::dummyCustom(int led) {
 }
 
+void LedString::dummyCycleSetup() {
+}
+
 void LedString::doSetup(String pattern) {
-  setCustom(dummyCustom); 
+  setCustom(dummyCustom);
+  setCycleSetup(dummyCycleSetup);
   _pattern = pattern;
   _pattern.replace(" ", "");
   _pattern.toUpperCase();
   _length = _pattern.length();
   leds = (CRGB*)malloc(_length * sizeof(CRGB));
-  FastLED.addLeds<WS2811, DATA_PIN, RGB>(leds, _length);
+  //FastLED.addLeds<WS2811, DATA_PIN, RGB>(leds, _length);
+  FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, _length);
   setupSwitches();
 }
 
-void LedString::doStart() {
-  turnAllOff();
-  turnLitOrSwitchedOn();
+void LedString::doCycle() {
+  cycleSetup();
+  int switchIndex = 0;
   long msNow = millis();
   for (int i = 0; i < _length; i++) {
     char ch = _pattern.charAt(i);
@@ -147,30 +159,20 @@ void LedString::doStart() {
       flicker(i);
       break;
     case 'C':
-      doCustom(i);
+      customHandler(i);
       break;
     }
   }
 }
 
+void LedString::doStart() {
+  turnAllOff();
+  turnLitOrSwitchedOn();
+  doCycle();
+}
+
 void LedString::doLoop() {
   if (isEventTime()) {
-    long msNow = millis();
-    int switchIndex = 0;
-
-    for (int i = 0; i < _length; i++) {
-      char ch = _pattern.charAt(i);
-      switch (ch) {
-      case 'S':
-        if (msNow >= nextSwitchTime) checkSwitch(i);
-        break;
-      case 'F':
-        flicker(i);
-        break;
-      case 'C':
-        doCustom(i);
-        break;
-      }
-    }
+    doCycle();
   }
 }
