@@ -1,8 +1,8 @@
 # LedString
 FastLED wrapper to simplify lighting for model towns, castles, villages.
 
-This wrapper class uses FastLED to set up WS2811 lighting for buildings in a model town, medieval village, etc. 
-LEDs are animated individually by assigning a predefined behavior to each led.
+This wrapper class uses FastLED to set up lighting for buildings in a model town, medieval village, etc. 
+LEDs are animated individually by assigning a predefined behavior to each led. The code can be used with WS2811, WS2812, WS2812B, WS2813, or NEOPIXEL rings and matrices. 
 
 #### Behaviors
 L = always Lit (white)  
@@ -26,13 +26,13 @@ This example defines a behavior pattern for 20 LEDs.
 The length of the text string determines the number of LEDs animated. If there are more LEDs on the string, they are turned off. [The length of the text string is used to allocate FastLED's internal CRGB array dynamically. Dynamic allocation is generally frowned upon 
 in Arduino code because of the potential for memory fragmentation, but since this step is executed only once in the sketch it shouldn't be a problem.]
 
-This code works on Arduino and ESP8266. Connect your LED string's data line to pin 3 on an Arduino, or pin D3 on an ESP8266. 
+This code works on Arduino and ESP8266. Connect your LED string's data line to pin 3 on an Arduino, or whichever pin you designate as DATA_PIN. To change this pin you must edit the value of DATA_PIN in LedString.h. 
 
-The original goal was to control multiple strings of leds with a single controller, using a different DATA_PIN for each string. However, FastLED requires specifying DATA_PIN as a constant for purposes of compile-time optimization. 
-As of this writing there is no way for DATA_PIN to be a property that would vary from one object instance to another. 
-So for now each string of leds needs its own controller, and an app can only use one instance of LedString. 
+The default hardware is WS2811. To select different hardware you must make two edits:  
+- in LedString.h uncomment the appropriate line to set FIRE_MIN, etc. 
+- in LedString.cpp uncomment the appropriate call to FastLED.addLeds for your hardware. 
 
-Running multiple strings on one controller should still be possible by using an external multiplexing circuit to connect them to DATA_PIN, using a couple other pins for addressing, but I have not tried to do this yet. 
+These edits are necessary because of requirements of the FastLED library, which LedString is based on. Due to compile-time optimizations in FastLED, certain values cannot be passed in as parameters. 
 
 ### Usage Example
 
@@ -56,7 +56,7 @@ void loop() {
 Custom behavior is a limited way to add more lighting options (see examples/CustomBehavior). Basically you designate custom LEDs with the letter "C" in doSetup(behaviorString), and write a function such as ```void myCustom(int ledNumber)``` that implements the behaviors. Then in setup() call **lights.setCustom**(myCustom). Your function will be called for every led whose behavior is specified with a "C". The LedString package has utility functions you can use such as turnOn(led) and turnOff(led), and you can reference LEDs as lights.leds[n] to call CRGB and CHSV functions. If you need to do something at the start of cycling through the leds, such as resetting variables used in custom behaviors, put that code in a function such as ```void myCycleSetup()``` and in setup() call **lights.setCycleSetup**(myCycleSetup). Your function will be called every time the main loop starts cycling through the leds.
 
 ## Notes
-1. To control a 50-led WS2811 string, the wiring is straightforward: connect the LED string's control line to pin 3, connect an adequate 5V power supply to the LEDs, and tie the power supply's DC ground to the Arduino ground.  
+1. To control a 50-led string, the wiring is straightforward: connect the LED string's control line to pin 3 (or whatever you you designate as DATA_PIN, connect an adequate 5V power supply to the LEDs, and tie the power supply's DC ground to the Arduino ground.     
 
 2. Small sections of LED strings can be run off Arduino power alone. I don't know the limit, but I have run a string of 8 leds cut from a string of 50. 
 
