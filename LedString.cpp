@@ -100,8 +100,8 @@ bool LedString::isEventTime() {
 }
 
 void LedString::checkSwitch(int led) {
-  // increment switchIndex until it reaches switchIndexToToggle, then toggle that led on/off
   if (switchIndex < switchIndexToToggle) {
+    // this isn't the switch to toggle
     switchIndex++;
   }
   else {
@@ -113,6 +113,7 @@ void LedString::checkSwitch(int led) {
     }
     switchIndexToToggle = random(0, numSwitches);
     nextSwitchTime = millis() + random(SWITCH_MIN, SWITCH_MAX);
+    switchIndex = 0;
   }
 }
 
@@ -132,22 +133,8 @@ void LedString::dummyCustom(int led) {
 void LedString::dummyCycleSetup() {
 }
 
-void LedString::doSetup(String pattern) {
-  setCustom(dummyCustom);
-  setCycleSetup(dummyCycleSetup);
-  _pattern = pattern;
-  _pattern.replace(" ", "");
-  _pattern.toUpperCase();
-  _length = _pattern.length();
-  leds = (CRGB*)malloc(_length * sizeof(CRGB));
-  //FastLED.addLeds<WS2811, DATA_PIN, RGB>(leds, _length);
-  FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, _length);
-  setupSwitches();
-}
-
 void LedString::doCycle() {
   cycleSetup();
-  int switchIndex = 0;
   long msNow = millis();
   for (int i = 0; i < _length; i++) {
     char ch = _pattern.charAt(i);
@@ -169,6 +156,27 @@ void LedString::doStart() {
   turnAllOff();
   turnLitOrSwitchedOn();
   doCycle();
+}
+
+void LedString::doSetup(String pattern, CRGB* ledArray) {
+  setCustom(dummyCustom);
+  setCycleSetup(dummyCycleSetup);
+  _pattern = pattern;
+  _pattern.replace(" ", "");
+  _pattern.toUpperCase();
+  _length = _pattern.length();
+  leds = ledArray;
+  FastLED.clear();
+  setupSwitches();
+  doStart();
+}
+
+void LedString::doSetup(String pattern) {
+  leds = (CRGB*)malloc(_length * sizeof(CRGB));
+  FastLED.addLeds<WS2811, DEFAULT_DATA_PIN, RGB>(leds, _length);
+  //FastLED.addLeds<NEOPIXEL, DEFAULT_DATA_PIN>(leds, _length);
+  doSetup(pattern, leds);
+  doStart();
 }
 
 void LedString::doLoop() {

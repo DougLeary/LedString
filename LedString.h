@@ -4,10 +4,11 @@
 
 #include <FastLED.h>
 
-#define DATA_PIN 5
+#define DEFAULT_DATA_PIN 2
 
 typedef void(*LedStringCustomFunction)(int);
 typedef void(*LedStringCycleSetup)();
+typedef void(*LedStringAddLeds)(CRGB leds, int length);
 
 class LedString
 {
@@ -19,6 +20,7 @@ public:
   int switchIndexToToggle = 0;
   long nextSwitchTime = 0;
 
+  void doSetup(String pattern, CRGB* ledArray);
   void doSetup(String pattern);
   void doStart();
   void doLoop();
@@ -37,8 +39,8 @@ private:
   String _pattern;
   int _length;
   // min/max brightness range of normal and intense flickers
-  int FIRE_MIN = 150; int FIRE_MAX = 190; int FLICKER_MIN = 130; int FLICKER_MAX = 225;  ////// WS2811, WS2812, WS2812B, WS2813
-//int FIRE_MIN = 80; int FIRE_MAX = 160; int FLICKER_MIN = 10; int FLICKER_MAX = 230;    ////// NEOPIXEL
+//  int FIRE_MIN = 150; int FIRE_MAX = 190; int FLICKER_MIN = 130; int FLICKER_MAX = 225;  ////// WS2811, WS2812, WS2812B, WS2813
+int FIRE_MIN = 80; int FIRE_MAX = 160; int FLICKER_MIN = 10; int FLICKER_MAX = 230;    ////// NEOPIXEL
 
 
   int FLICKER_RATE = 80;   // ms between flickers
