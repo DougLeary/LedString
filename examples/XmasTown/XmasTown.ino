@@ -1,7 +1,7 @@
 //// LED settings
 #include <LedString.h>
 #define NUM_STRIPS 5
-#define NUM_LEDS 30
+#define NUM_LEDS 50
 #define DATA_PIN_0 2  // top shelf
 #define DATA_PIN_1 3
 #define DATA_PIN_2 4
@@ -82,6 +82,25 @@ void saveConfig() {
   }
 }
 
+long customInterval = 1000L;            // set ms between toggle events
+long lastCustomTime = -customInterval;  // make the first toggle happen immediately
+
+void customBehavior(CRGB led) {
+  long msNow = millis();
+  // if customInterval has elapsed since the last toggle, it's time to toggle
+  if (msNow - lastCustomTime > customInterval)
+  {
+    lastCustomTime = msNow;
+    // if the led is red make it blue, else make it red
+    if (led.red == 255) {
+      led = CRGB::Blue;
+    } else {
+      led = CRGB::Red;
+    }
+  }
+  FastLED.show();   // physically update the leds
+}
+
 //// Web server
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
@@ -96,16 +115,17 @@ ESP8266WebServer server(80);
 const String formHtml = "\
 <html>\
   <head>\
-    <title>ESP8266 Web Server POST handling</title>\
+    <title>Xmas Town Lighting Control</title>\
     <style>\
       body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; \
         color: #000088; font-size: 24px;}\
-      .pattern { width: 300px; }\
+      .pattern { width: 530px; }\
       .prompt { font-weight: bold; padding-right: 15px; }\
     </style>\
   </head>\
   <body>\
-    <h1>LED patterns</h1>\
+    <h1>Xmas Town Lighting Control</h1>\
+    <span style=\"font-weight: bold;\">W: White, Y: Yellow, R: Red, G: Green, B: Blue, S: Switched, F: Fire</span>\
     <form method=\"post\" enctype=\"application/x-www-form-urlencoded\" action=\"/postform/\">\
       <span class=\"prompt\">Level 5</span><input class=\"pattern\" type=\"text\" name=\"pat0\" value=\"$0$\"><br/>\
       <span class=\"prompt\">Level 4</span><input class=\"pattern\" type=\"text\" name=\"pat1\" value=\"$1$\"><br/>\
@@ -162,11 +182,11 @@ void handleNotFound() {
 
 void startWebServer() {
   Serial.println("Connecting to WiFi");
-  IPAddress staticIP(192, 168, 0, 198);
+  IPAddress staticIP(192, 168, 0, 197);
   IPAddress gateway(192, 168, 0, 1);
   IPAddress subnet(255, 255, 255, 0);
   IPAddress dns(8, 8, 8, 8);
-  const char* deviceName = "xmastree";
+  const char* deviceName = "xmastown";
 
   WiFi.disconnect();          // make sure there's no current connection
   WiFi.hostname(deviceName);  // DHCP hostname for finding static lease
@@ -196,25 +216,6 @@ void startWebServer() {
 
   server.begin();
   Serial.println("HTTP server started");
-}
-
-long customInterval = 1000L;            // set ms between toggle events
-long lastCustomTime = -customInterval;  // make the first toggle happen immediately
-
-void customBehavior(CRGB led) {
-  long msNow = millis();
-  // if customInterval has elapsed since the last toggle, it's time to toggle
-  if (msNow - lastCustomTime > customInterval)
-  {
-    lastCustomTime = msNow;
-    // if the led is red make it blue, else make it red
-    if (led.red == 255) {
-      led = CRGB::Blue;
-    } else {
-      led = CRGB::Red;
-    }
-  }
-  FastLED.show();   // physically update the leds
 }
 
 void setup() {
