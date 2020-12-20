@@ -1,13 +1,22 @@
-// Custom behavior example - toggle between red and blue every second
+// Custom behavior example - toggles leds between red and blue every second
 
 #include "LedString.h"
 LedString lights;
 
-long customInterval = 1000L;            // set ms between toggle events
-long lastCustomTime = -customInterval;  // make the first toggle happen immediately
+#define DATA_PIN 3
+#define NUM_LEDS 8
+
+// pattern is Red, Green, Blue, White, Custom, Custom, Custom, Custom
+String pattern = "RGBWCCCC";
+
+// allocate space for 8 leds
+CRGB leds[NUM_LEDS];
+
+uint32_t customInterval = 1000;             // ms between toggle events
+uint32_t lastCustomTime = -customInterval;  // make the first event happen immediately
 
 void customBehavior(int led) {
-  long msNow = millis();
+  uint32_t msNow = millis();
   // if customInterval has elapsed since the last toggle, it's time to toggle
   if (msNow - lastCustomTime > customInterval)
   {
@@ -23,10 +32,12 @@ void customBehavior(int led) {
 }
 
 void setup() {
-  lights.doSetup("LCOOOOOO");
+  // addLeds must be called here rather than being done by the library
+  // because FastLED requires the pin number to be a compile-time constant.
+  FastLED.addLeds<WS2811, DATA_PIN, RGB>(leds, NUM_LEDS);
+  
+  lights.doSetup(pattern, leds);
   lights.setCustom(customBehavior);
-  lights.turnAllOff();
-  delay(1000);
   lights.doStart();
 }
 
