@@ -14,7 +14,6 @@ class LedString
 public:
   CRGB* leds = 0;
   String pattern;
-  long lastEventTime;
 
   // min/max brightness range of normal and intense flickers
   static const int FIRE_MIN = 150; 
@@ -27,13 +26,14 @@ public:
   static const int FLICKER_EXTRA = 2;  // when brightness is this close to FIRE_MIN or MAX, FLICKER_MIN or MAX is used
 
   // timing for switched lights
-  static const long AVERAGE_SWITCH_INTERVAL = 20000L; // desired average ms between toggling a random switched led
-  static const long MIN_SWITCH_INTERVAL = 5000L;      // shortest time between toggling
+  static const uint32_t AVERAGE_SWITCH_INTERVAL = 20000; // desired average ms between toggling a random switched led
+  static const uint32_t MIN_SWITCH_INTERVAL = 5000;      // shortest time between toggling
 
   void doSetup(String pattern, CRGB* ledArray);
-//  void doSetup(String pattern);
   void doStart();
   void doLoop();
+  uint32_t currentTime();
+  uint32_t lastEventTime();
   void setHandler(char, LedStringHandler);
   void setPattern(String st);
 

@@ -12,6 +12,17 @@ NEOPIXEL ring
 #include "FastLED.h"
 #include "LedString.h"
 
+uint32_t _time = 0;
+uint32_t _lastEventTime = 0;
+
+uint32_t LedString::currentTime() {
+  return _time;
+}
+
+uint32_t LedString::lastEventTime() {
+  return _lastEventTime;
+}
+
 void LedString::setHandler(char label, LedStringHandler f) {
   for (int i=0; i<handler_count; i++) {
     if (labels[i] == label) {
@@ -65,7 +76,6 @@ void flicker(CRGB* leds, int led) {
     value = LedString::FIRE_MAX + ((LedString::FLICKER_MAX - LedString::FIRE_MAX) / (LedString::FIRE_MAX - value));
   }
   leds[led] = CHSV(25, 187, value);
-  FastLED.show();
 }
 
 
@@ -88,65 +98,34 @@ bool LedString::isOn(int led) {
 
 void LedString::turnOn(int led) {
   setWhite(leds, led);
-  FastLED.show();
 }
 
 void LedString::turnOff(int led) {
   setBlack(leds, led);
-  FastLED.show();
 }
 
 void LedString::turnAllOn() {
   for (int i = 0; i < _length; i++) {
     setWhite(leds, i);
   }
-  FastLED.show();
 }
 
 void LedString::turnAllOff() {
   for (int i = 0; i < _length; i++) {
     setBlack(leds, i);
   }
-  FastLED.show();
-}
-
-void LedString::turnOnSteadies() {
-  // turn on all switched or constantly lit leds
-  for (int i = 0; i < _length; i++) {
-    char ch = pattern.charAt(i);
-    switch (ch) {
-    case 'W':
-      leds[i] = CRGB::White;
-      break;
-    case 'S':
-      leds[i] = CRGB::White;
-      break;
-    case 'R':
-      leds[i] = CRGB::Red;
-      break;
-    case 'G':
-      leds[i] = CRGB::Green;
-      break;
-    case 'B':
-      leds[i] = CRGB::Blue;
-      break;
-    case 'Y':
-      leds[i] = CRGB::Yellow;
-      break;
-    }
-  }
-  FastLED.show();
 }
 
 bool LedString::isEventTime() {
-  long msNow = millis();
-  long gap = msNow - lastEventTime;
+  // time sync function; everything else is based on _time and _lastEventTime
+  _time = millis();
+  uint32_t gap = _time - _lastEventTime;
   if (gap >= FLICKER_RATE) {
-    lastEventTime = msNow;
+    _lastEventTime = _time;
     return true;
   }
   else {
-    // note: this includes when millis() rolls over to 0, because gap will be < 0 
+    // this includes when millis() rolls over to 0, because gap will be < 0 
     return false;
   }
 }
@@ -154,7 +133,8 @@ bool LedString::isEventTime() {
 int numSwitches = 0;
 int switchIndex = 0;
 int switchIndexToToggle = 0;
-long nextSwitchTime = 0;
+uint32_t nextSwitchTime = 0;
+uint32_t switchInterval = 0;
 
 void LedString::setupSwitches() {
   for (int i = 0; i < _length; i++) {
@@ -164,14 +144,14 @@ void LedString::setupSwitches() {
   }
   if (numSwitches > 1) {
     switchIndexToToggle = random(0, numSwitches);
-    nextSwitchTime = millis() + (max(LedString::AVERAGE_SWITCH_INTERVAL / numSwitches, LedString::MIN_SWITCH_INTERVAL));
+    switchInterval = (max(LedString::AVERAGE_SWITCH_INTERVAL / numSwitches, LedString::MIN_SWITCH_INTERVAL));
+    nextSwitchTime = _time + switchInterval;
   }
 }
 
 void checkSwitch(CRGB* leds, int i) {
   // skip if it's not time to switch
-  long msNow = millis();
-  if (msNow < nextSwitchTime) return;
+  if (_time < nextSwitchTime) return;
   if (switchIndex == switchIndexToToggle) {
     // toggle this switch, pick another to toggle next, and reset the index
     if (leds[i].red > 0) {
@@ -180,7 +160,7 @@ void checkSwitch(CRGB* leds, int i) {
       leds[i] = CRGB::White;
     }
     switchIndexToToggle = random(0, numSwitches);
-    nextSwitchTime = msNow + nextSwitchTime;
+    nextSwitchTime = _time + switchInterval;
     switchIndex = 0;
   } else {
       switchIndex++;
@@ -227,9 +207,6 @@ void LedString::setPattern(String newPattern) {
     st += "O";
   }
   pattern = st;
-  parsePattern(pattern);
-  setupSwitches();
-  doStart();
 }
 
 void LedString::dummyCycleSetup() {
@@ -241,20 +218,7 @@ void LedString::doCycle() {
   for (int i = 0; i < behavior_count; i++) {
     behaviors[i](leds, i);
   }
-}
-
-void LedString::doStart() {
-  turnAllOff();
-  turnOnSteadies();
-  doCycle();
-}
-
-void LedString::doSetup(String _pattern, CRGB* ledArray) {
-  leds = ledArray;
-  _length = FastLED.size();
-  setupStandardHandlers();
-  setCycleSetup(dummyCycleSetup);
-  setPattern(_pattern);
+  FastLED.show();
 }
 
 //void LedString::doSetup(String ledPattern) {
@@ -264,6 +228,21 @@ void LedString::doSetup(String _pattern, CRGB* ledArray) {
 //  doSetup(ledPattern, leds);
 //  doStart();
 //}
+
+void LedString::doSetup(String _pattern, CRGB* ledArray) {
+  leds = ledArray;
+  _length = FastLED.size();
+  setupStandardHandlers();
+  setCycleSetup(dummyCycleSetup);
+  setPattern(_pattern);
+}
+
+void LedString::doStart() {
+  parsePattern(pattern);
+  setupSwitches();
+  turnAllOff();
+  doCycle();
+}
 
 void LedString::doLoop() {
   if (isEventTime()) {
