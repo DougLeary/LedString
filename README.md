@@ -12,10 +12,11 @@ R: Red, always lit
 G: Green, always lit
 B: Blue, always lit
 Y: Yellow, always lit
-O = Off (uppercase "O" not zero)  
-S = Switched on and off semi-randomly to give an appearance of habitation. At a random interval of SWITCH_MIN..SWITCH_MAX milliseconds, one randomly chosen led marked "S" is toggled on or off.
-F = Fire (flickering simulation of a fireplace, torch, etc). Fire LEDs flicker independently of each other.   
-C = Custom behavior (not working in this branch) 
+O: Off
+S: Switched on and off semi-randomly to give an appearance of habitation. At a random interval of SWITCH_MIN..SWITCH_MAX milliseconds, one randomly chosen led marked "S" is toggled on or off.
+F: Fire (flickering simulation of a fireplace, torch, etc). Fire LEDs flicker independently of each other.
+
+An application may assign any other single character to a custom behavior, or override any of the standard ones (see example code Custom.ino).
 
 Example: "WWOFW SSFWO OOWSS FSSSW"
 
@@ -26,7 +27,7 @@ This code works on Arduino and ESP8266.
 
 ***** TO DO: FINISH EDITING BEYOND THIS POINT *****
 
-The default hardware is WS2811. To select different hardware you must make two edits:  
+The default hardware is WS2811. To select different hardware you must make two edits: 
 - in LedString.h uncomment the appropriate line to set FIRE_MIN, etc. 
 - in LedString.cpp uncomment the appropriate call to FastLED.addLeds for your hardware. 
 
