@@ -26,19 +26,19 @@ void sequence(CRGB* leds, int ledNumber, CRGB colors[], int count, uint32_t inte
 }
 
 void blink1(CRGB* leds, int i) {
-  CRGB colors[] = { CRGB::Green, CRGB::Red, CRGB::Yellow, CRGB::Orange, CRGB::Blue };
-  sequence(leds, i, colors, 5, 3000);
+  CRGB colors[] = { CRGB::Red, CRGB::White, CRGB::Blue };
+  sequence(leds, i, colors, 3, 1000);
 }
 
 void blink2(CRGB* leds, int i) {
-  CRGB colors[] = { CRGB::Red, CRGB::Green };
-  sequence(leds, i, colors, 2, 1000);
+  CRGB colors[] = { CRGB::Red, CRGB::Green, CRGB::Blue };
+  sequence(leds, i, colors, 3, 1000);
 }
 
 void setup() {
   FastLED.clear();
   FastLED.addLeds<WS2811, DATA_PIN, RGB>(leds, NUM_LEDS);
-  myLedString.doSetup("21rgb", leds);
+  myLedString.doSetup("12rgb", leds);
   myLedString.setHandler('2', &blink2);
   myLedString.setHandler('1', &blink1);
   myLedString.doStart();

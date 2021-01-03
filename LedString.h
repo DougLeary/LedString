@@ -29,6 +29,7 @@ public:
   static const uint32_t AVERAGE_SWITCH_INTERVAL = 20000; // desired average ms between toggling a random switched led
   static const uint32_t MIN_SWITCH_INTERVAL = 5000;      // shortest time between toggling
 
+  //void doSetup(String ledPattern);
   void doSetup(String pattern, CRGB* ledArray);
   void doStart();
   void doLoop();
@@ -69,6 +70,7 @@ private:
   void turnLitOn();
   void turnOnSteadies();
   bool isEventTime();
+  bool isEventTime(uint32_t &previousTime);
   void setupSwitches();
   void doCycle();
 };

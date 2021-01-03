@@ -116,18 +116,22 @@ void LedString::turnAllOff() {
   }
 }
 
-bool LedString::isEventTime() {
+bool LedString::isEventTime(uint32_t &previousTime) {
   // time sync function; everything else is based on _time and _lastEventTime
   _time = millis();
-  uint32_t gap = _time - _lastEventTime;
+  uint32_t gap = _time - previousTime;
   if (gap >= FLICKER_RATE) {
-    _lastEventTime = _time;
+    previousTime = _time;
     return true;
   }
   else {
     // this includes when millis() rolls over to 0, because gap will be < 0 
     return false;
   }
+}
+
+bool LedString::isEventTime() {
+  return isEventTime(_lastEventTime);
 }
 
 int numSwitches = 0;
