@@ -5,10 +5,23 @@
 
 #define MAX_LEDS 100    // max number of behaviors, i.e. leds; need to make this dynamic and depend on the size of the pattern set by the app
 
-typedef void(*LedStringHandler)(CRGB*, int);
-typedef void(*LedStringCycleSetup)();
+typedef void(*LedStringHandler)(CRGB*, int);  // implements behavior on one led
+typedef void(*LedStringCycleStart)();         // handler init code to run at the start of every doCycle()
 
 #define MAX_LED_STRING_HANDLERS 20
+
+// a handler is a labeled function that operates on a led, with an optional timer interval;
+// handlers are assigned to leds by label chars in the pattern string.  
+class Handler {
+  public:
+    char label;               // 1-char label to use in patterns
+    LedStringHandler f;       // handler function 
+    uint32_t interval = 0;    // milliseconds between events
+    uint32_t whenLast = 0;    // time of last event
+    bool enabled = false;     // true if it's time to do this behavior
+    void init(char label, LedStringHandler f, uint32_t interval);
+};
+
 class LedString
 {
 public:
@@ -29,14 +42,16 @@ public:
   static const uint32_t AVERAGE_SWITCH_INTERVAL = 20000; // desired average ms between toggling a random switched led
   static const uint32_t MIN_SWITCH_INTERVAL = 5000;      // shortest time between toggling
 
-  //void doSetup(String ledPattern);
-  void doSetup(String pattern, CRGB* ledArray);
-  void doStart();
-  void doLoop();
+  //void setup(String ledPattern);
+  void setup(CRGB* ledArray);
+  void begin(String pattern);
+  void loop();
   uint32_t currentTime();
-  uint32_t lastEventTime();
-  void setHandler(char, LedStringHandler);
+  uint32_t previousTime();
+//  void addHandler(char label, LedStringHandler, LedStringCycleStart, uint32_t interval);
+  void addHandler(char label, LedStringHandler, uint32_t interval);
   void setPattern(String st);
+  void countSwitches();
 
   bool isOn(int led);
   void turnOn(int led);
@@ -45,33 +60,17 @@ public:
   void turnAllOff();
   void resetAll();
   void setLed(int i, CRGB::HTMLColorCode color);
-  void setCycleSetup(LedStringCycleSetup);   // sets the function to call at the start of each cycle through the leds
-
+  
 private:
   int _length;
 
-  // labels is an array of characters, each attached to a handler function that applies a behavior to a led
-  // setHandler adds labels and their handlers to these lists
-  int handler_count = 0;
-  char labels[MAX_LED_STRING_HANDLERS] = "\0";
-  LedStringHandler handlers[MAX_LED_STRING_HANDLERS];
-
-  // behaviors is an array of handler pointers, one for each led, executed in sequence by doCycle; 
-  // this array is essentially the program for the led string
-  int behavior_count = 0;
-  LedStringHandler behaviors[MAX_LEDS];
-
-  static void dummyCycleSetup();
-  LedStringCycleSetup cycleSetup;
-
-  void setupStandardHandlers();
+  void addStandardHandlers();
   void addBehavior(char label);
-  void parsePattern(String pattern);
-  void turnLitOn();
-  void turnOnSteadies();
-  bool isEventTime();
-  bool isEventTime(uint32_t &previousTime);
-  void setupSwitches();
+  void populateBehaviors();
+  bool isEventTime(uint32_t interval, uint32_t &previousTime);
+  void enableHandlers();
+  void saveEventTime();
+  void doBehaviors();
   void doCycle();
 };
 
