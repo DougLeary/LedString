@@ -26,36 +26,42 @@ uint32_t LedString::previousTime() {
 }
 
 // array of defined handlers the system knows about
-Handler* handlers[MAX_LED_STRING_HANDLERS];
+LedHandler* handlers[MAX_LED_STRING_HANDLERS];
 int handler_count = 0;
 
 // behaviors is an array of handlers, one for each led;
-Handler* behaviors[MAX_LEDS];
+LedHandler* behaviors[MAX_LEDS];
 int behavior_count = 0;
 
-void Handler::init(char label, LedStringHandler f, uint32_t interval) {
+void LedHandler::init(char label, LedStart start, LedLoop loop, uint32_t interval) {
   this->label = label;
-  this->f = f;
+  this->start = start;
+  this->loop = loop;
   this->interval = interval;
   this->whenLast = 0;
   this->enabled = false;
 }
 
-void LedString::addHandler(char label, LedStringHandler f, uint32_t interval) {
-  // instantiate a handler on the heap
-  Handler* h = new Handler();
-  h->init(label, f, interval);
-
+void LedString::addHandler(LedHandler* h) {
   // if exists replace
   for (int i=0; i<handler_count; i++) {
-    if (handlers[i]->label == label) {
+    if (handlers[i]->label == h->label) {
+      Serial.print("Replacing handler "); Serial.println(h->label);
       handlers[i] = h;
+      return;
     }
   }
   // not found so append
-  Serial.print("Adding handler "); Serial.println(label);
+  Serial.print("Adding handler "); Serial.println(h->label);
   handlers[handler_count] = h;
   handler_count++;
+}
+
+void LedString::addHandler(char label, LedStart start, LedLoop loop, uint32_t interval) {
+  // instantiate a handler on the heap
+  LedHandler* h = new LedHandler();
+  h->init(label, start, loop, interval);
+  addHandler(h);
 }
 
 void LedString::setLed(int i, CRGB::HTMLColorCode color) {
@@ -190,15 +196,15 @@ void checkSwitch(CRGB* leds, int i) {
   }
 }
 
-void LedString::addStandardHandlers() {
-  addHandler('O', &setBlack, 0);    // also used as the dummy handler for unknown pattern chars
-  addHandler('R', &setRed, 0);
-  addHandler('G', &setGreen, 0);
-  addHandler('B', &setBlue, 0);
-  addHandler('Y', &setYellow, 0);
-  addHandler('W', &setWhite, 0);
-  addHandler('F', &flicker, FLICKER_RATE);
-  addHandler('S', &checkSwitch, 0);
+void LedString::addBuiltInHandlers() {
+  addHandler('O', 0, &setBlack, 0);    // also used as the dummy handler for unknown pattern chars
+  addHandler('R', 0, &setRed, 0);
+  addHandler('G', 0, &setGreen, 0);
+  addHandler('B', 0, &setBlue, 0);
+  addHandler('Y', 0, &setYellow, 0);
+  addHandler('W', 0, &setWhite, 0);
+  addHandler('F', 0, &flicker, FLICKER_RATE);
+  addHandler('S', 0, &checkSwitch, 0);
   Serial.print("Standard Handlers Added: ");
   Serial.println(handler_count);
   char ch = handlers[handler_count - 1]->label;
@@ -252,35 +258,34 @@ void LedString::setPattern(String newPattern) {
 }
 
 void LedString::enableHandlers() {
-  // enable whichever handlers should execute based on timing
+  // based on current time and interval, enable handlers that should execute and run their cycle start functions
   Serial.println("===== enableHandlers");
   for (int i=0; i < handler_count; i++) {
-    handlers[i]->enabled = (isEventTime(handlers[i]->interval, handlers[i]->whenLast));
+    LedHandler* h = handlers[i];
+    h->enabled = (isEventTime(h->interval, h->whenLast));
     Serial.print(i);
-    if (handlers[i]->enabled) { Serial.print(" "); Serial.print(handlers[i]->label); Serial.println(" enabled"); }
-    else { Serial.println(" disabled"); }
-  }
-}
-
-void LedString::saveEventTime() {
-  Serial.println("===== saveEventTime");
-  for (int i=0; i < handler_count; i++) {
-    if (handlers[i]->enabled) {
-      handlers[i]->whenLast = _time;
-    }
+    if (h->enabled) {
+      Serial.print(" "); Serial.print(h->label); Serial.println(" enabled");
+      h->whenLast = _time;
+      if (h->start) {
+        h->start;
+      }
+    } else { Serial.println(" disabled"); }
   }
 }
 
 void LedString::doBehaviors() {
   Serial.println("===== doBehaviors");
   for (int i = 0; i < behavior_count; i++) {
-    if (behaviors[i]->enabled) {
+    LedHandler* h = behaviors[i];
+    if (h->enabled) {
       Serial.print("Doing ");
-      Serial.print(behaviors[i]->label);
-      behaviors[i]->f(leds, i);
+      Serial.print(h->label);
+      if (h->loop) { h->loop(leds, i); }
       Serial.println();
-    } 
-    else Serial.println();
+    } else { 
+      Serial.print(h->label); Serial.println(" not enabled");
+    }
   }
 }
 
@@ -294,7 +299,7 @@ void LedString::doBehaviors() {
 void LedString::setup(CRGB* ledArray) {
   leds = ledArray;
   turnAllOff();
-  addStandardHandlers();
+  addBuiltInHandlers();
 }
 
 void LedString::begin(String _pattern) {
@@ -311,5 +316,4 @@ void LedString::loop() {
   enableHandlers();
   doBehaviors();
   FastLED.show();
-  saveEventTime();
 }
