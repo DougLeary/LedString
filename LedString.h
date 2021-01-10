@@ -4,21 +4,23 @@
 #include <FastLED.h>
 
 #define MAX_LEDS 100    // max number of behaviors, i.e. leds; need to make this dynamic and depend on the size of the pattern set by the app
-
-typedef void (*LedStart) ();            // run at the start of every cycle through leds
-typedef void (*LedLoop) (CRGB*, int);   // update one led
-
 #define MAX_LED_STRING_HANDLERS 20
-
 class LedHandler {    // implements led behaviors 
   public:
-    char label;               // 1-char label to use in patterns
-    LedStart start;           // setup for cycling through all leds
-    LedLoop loop;             // individual led behavior
-    uint32_t interval = 0;    // milliseconds between events; if 0 do once only
-    uint32_t whenLast = 0;    // time of last event
-    bool enabled = false;     // true if the handler should execute during this cycle
-    void init(char label, LedStart s, LedLoop loop, uint32_t interval);
+    char label;                     // 1-char label to use in pattern
+    uint32_t interval = 0;          // milliseconds between events; if 0 do once only at startup 
+    uint32_t whenLast = 0;          // time of last event
+    bool enabled = false;           // true if the handler should execute during this cycle
+    LedHandler(char label, uint32_t interval);
+    virtual void start();                   // executed before cycling through the leds
+    virtual void loop(CRGB *leds, int i);   // executed on each led with this label
+};
+
+class SimpleHandler : public LedHandler {
+  public:
+    CRGB::HTMLColorCode color;
+    SimpleHandler(char label, uint32_t interval, CRGB::HTMLColorCode color);
+    virtual void loop(CRGB *leds, int i);
 };
 
 class LedString
@@ -47,7 +49,7 @@ public:
   uint32_t currentTime();
   uint32_t previousTime();
   void addHandler(LedHandler* h);
-  void addHandler(char label, LedStart start, LedLoop loop, uint32_t interval);
+  void addSimpleHandler(char label, uint32_t interval, CRGB::HTMLColorCode color);
   void setPattern(String st);
   void countSwitches();
 
