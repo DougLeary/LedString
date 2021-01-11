@@ -22,13 +22,16 @@ LedHandler::LedHandler(char label, uint32_t interval)
   this->interval = interval;
 }
 
+void LedHandler::setup() {
+  // do when a pattern is created or changed
+}
+
 void LedHandler::start() {
   // if handler is enabled, do before cycling through leds
 }
 
 void LedHandler::loop(CRGB* leds, int i) {
   // do for each led with this label
-  Serial.println(" base class handler");
 }
 
 /////////////// SimpleHandler
@@ -93,37 +96,6 @@ void LedString::setLed(int i, CRGB::HTMLColorCode color) {
   leds[i] = color;
 }
 
-////// standard handlers
-void setRed(CRGB* leds, int i) {
-  Serial.print(" Red");
-  leds[i] = CRGB::Red;
-}
-
-void setGreen(CRGB* leds, int i) {
-  Serial.print(" Green");
-  leds[i] = CRGB::Green;
-}
-
-void setBlue(CRGB* leds, int i) {
-  Serial.print(" Blue");
-  leds[i] = CRGB::Blue;
-}
-
-void setYellow(CRGB* leds, int i) {
-  Serial.print(" Yellow");
-  leds[i] = CRGB::Yellow;
-}
-
-void setWhite(CRGB* leds, int i) {
-  Serial.print(" White");
-  leds[i] = CRGB::White;
-}
-
-void setBlack(CRGB* leds, int i) {
-  Serial.print(" Black");
-  leds[i] = CRGB::Black;
-}
-
 void flicker(CRGB* leds, int led) {
   int value = random(LedString::FIRE_MIN, LedString::FIRE_MAX);
   // occasional intense flicker
@@ -136,9 +108,6 @@ void flicker(CRGB* leds, int led) {
   leds[led] = CHSV(25, 187, value);
 }
 
-
-//////
-
 void LedString::resetAll() {
   FastLED.clear();
 }
@@ -150,23 +119,23 @@ bool LedString::isOn(int led) {
     (leds[led].blue == 255));
 }
 
-void LedString::turnOn(int led) {
-  setWhite(leds, led);
+void LedString::turnOn(int i) {
+  leds[i] = CRGB::White;
 }
 
-void LedString::turnOff(int led) {
-  setBlack(leds, led);
+void LedString::turnOff(int i) {
+  leds[i] = CRGB::Black;
 }
 
 void LedString::turnAllOn() {
   for (int i = 0; i < _length; i++) {
-    setWhite(leds, i);
+    leds[i] = CRGB::White;
   }
 }
 
 void LedString::turnAllOff() {
   for (int i = 0; i < _length; i++) {
-    setBlack(leds, i);
+    leds[i] = CRGB::Black;
   }
 }
 
@@ -186,22 +155,6 @@ int switchIndex = 0;
 int switchIndexToToggle = 0;
 uint32_t nextSwitchTime = 0;
 uint32_t switchInterval = 0;
-
-void LedString::countSwitches() {
-  Serial.println("Counting switches");
-  for (int i = 0; i < _length; i++) {
-    if (pattern.charAt(i) == 'S') {
-      numSwitches++;
-    }
-  }
-  // Serial.printf("%n switches\n", numSwitches);
-  // if (numSwitches > 1) {
-  //   switchIndexToToggle = random(0, numSwitches);
-  //   switchInterval = (max(LedString::AVERAGE_SWITCH_INTERVAL / numSwitches, LedString::MIN_SWITCH_INTERVAL));
-  //   nextSwitchTime = _time + switchInterval;
-  // }
-  Serial.printf("%d Switches\n", numSwitches);
-}
 
 void checkSwitch(CRGB* leds, int i) {
   // skip if it's not time to switch
@@ -241,28 +194,34 @@ void LedString::addBehavior(char label) {
   // find the handler for the label and append it to behaviors
   for (int i=0; i<handler_count; i++) {
     if (handlers[i]->label == label) {
-      Serial.print("Using behavior ");
-      Serial.println(label);
+      // Serial.print("Using behavior ");
+      // Serial.println(label);
       behaviors[behavior_count++] = handlers[i];
       return;
     }
   }
-  Serial.print("Behavior "); Serial.print(label); Serial.println(" not found; using default");
+  // Serial.print("Behavior "); Serial.print(label); Serial.println(" not found; using default");
   behaviors[behavior_count++] = handlers[0];  // use dummy handler
 }
 
 void LedString::populateBehaviors() {
   // for each character in the pattern add the corresponding handler to the behaviors list
   behavior_count = 0;
-  Serial.printf("Populating %d Behaviors for pattern ", _length);
-  Serial.println(pattern);
+  // Serial.printf("Populating %d Behaviors for pattern ", _length);
+  // Serial.println(pattern);
   for (int i = 0; i < _length; i++) {
     char label = pattern.charAt(i);
     addBehavior(label);
   }
-  Serial.print(behavior_count); Serial.println(" behaviors added");
+  // Serial.print(behavior_count); Serial.println(" behaviors added");
 }
 
+void LedString::setupHandlers() {
+  for (int i = 0; i < handler_count; i++)
+  {
+    handlers[i]->setup();
+  }
+}
 void LedString::setPattern(String newPattern) {
   // if new string is longer than original it is truncated;
   // if shorter it is padded with Os to turn off the unused leds.
@@ -280,34 +239,38 @@ void LedString::setPattern(String newPattern) {
   _length = pattern.length();
   Serial.print("pattern: "); Serial.println(pattern);
   populateBehaviors();
+  setupHandlers();
 }
 
 void LedString::enableHandlers() {
   // based on current time and interval, enable handlers that should execute and run their cycle start functions
-  Serial.println("===== enableHandlers");
+//  Serial.println("===== enableHandlers");
   for (int i=0; i < handler_count; i++) {
     LedHandler* h = handlers[i];
     h->enabled = (isEventTime(h->interval, h->whenLast));
-    Serial.print(i);
+//    Serial.print(i);
     if (h->enabled) {
-      Serial.print(" "); Serial.print(h->label); Serial.println(" enabled");
+//      Serial.print(" "); Serial.print(h->label); Serial.println(" enabled");
       h->whenLast = _time;
       h->start();
-    } else { Serial.println(" disabled"); }
+    } else 
+    { 
+//      Serial.println(" disabled"); 
+    }
   }
 }
 
 void LedString::doBehaviors() {
-  Serial.println("===== doBehaviors");
+//  Serial.println("===== doBehaviors");
   for (int i = 0; i < behavior_count; i++) {
     LedHandler* h = behaviors[i];
     if (h->enabled) {
-      Serial.print("Doing ");
-      Serial.print(h->label);
+//      Serial.print("Doing ");
+//      Serial.print(h->label);
       h->loop(leds, i);
-      Serial.println();
+//      Serial.println();
     } else { 
-      Serial.print(h->label); Serial.println(" not enabled");
+//      Serial.print(h->label); Serial.println(" not enabled");
     }
   }
 }
@@ -330,8 +293,6 @@ void LedString::begin(String _pattern) {
   Serial.println(_pattern);
   setPattern(_pattern);
   Serial.println("pattern set");
-  countSwitches();
-  Serial.println("setup Done");
 }
 
 void LedString::loop() {

@@ -12,6 +12,7 @@ class LedHandler {    // implements led behaviors
     uint32_t whenLast = 0;          // time of last event
     bool enabled = false;           // true if the handler should execute during this cycle
     LedHandler(char label, uint32_t interval);
+    virtual void setup();                   // executed when a pattern is created or changed
     virtual void start();                   // executed before cycling through the leds
     virtual void loop(CRGB *leds, int i);   // executed on each led with this label
 };
@@ -68,6 +69,7 @@ private:
   void addBehavior(char label);
   void populateBehaviors();
   bool isEventTime(uint32_t interval, uint32_t &previousTime);
+  void setupHandlers();
   void enableHandlers();
   void doBehaviors();
   void doCycle();
