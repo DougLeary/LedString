@@ -5,6 +5,9 @@
 
 #define MAX_LEDS 100    // max number of behaviors, i.e. leds; need to make this dynamic and depend on the size of the pattern set by the app
 #define MAX_LED_STRING_HANDLERS 20
+
+class LedString;      // needed because handlers and LedString mutually reference each other.
+
 class LedHandler {    // implements led behaviors 
   public:
     char label;                     // 1-char label to use in pattern
@@ -12,16 +15,35 @@ class LedHandler {    // implements led behaviors
     uint32_t whenLast = 0;          // time of last event
     bool enabled = false;           // true if the handler should execute during this cycle
     LedHandler(char label, uint32_t interval);
-    virtual void setup();                   // executed when a pattern is created or changed
-    virtual void start();                   // executed before cycling through the leds
-    virtual void loop(CRGB *leds, int i);   // executed on each led with this label
+    virtual void setup(LedString ls);       // executed when a pattern is created or changed
+    virtual void start(LedString ls);       // executed before cycling through the leds
+    virtual void loop(LedString ls, int i); // executed on each led with this label
 };
 
 class SimpleHandler : public LedHandler {
   public:
-    CRGB::HTMLColorCode color;
-    SimpleHandler(char label, uint32_t interval, CRGB::HTMLColorCode color);
-    virtual void loop(CRGB *leds, int i);
+    CRGB color;
+    SimpleHandler(char label, uint32_t interval, CRGB color);
+    virtual void loop(LedString ls, int i);
+};
+
+class FlameHandler : public LedHandler {
+  public:
+    FlameHandler(char label, uint32_t interval);
+    virtual void loop(LedString ls, int i);
+};
+
+class SwitchGroup : public LedHandler {
+  private:
+    int switchCount;
+    int countdown;
+    CRGB color;
+    uint32_t minInterval;
+    uint32_t maxInterval;
+  public:
+    SwitchGroup(char label, uint32_t minInterval, uint32_t maxInterval, CRGB color);
+    virtual void setup(LedString ls);
+    virtual void loop(LedString ls, int i);
 };
 
 class LedString
@@ -50,7 +72,7 @@ public:
   uint32_t currentTime();
   uint32_t previousTime();
   void addHandler(LedHandler* h);
-  void addSimpleHandler(char label, uint32_t interval, CRGB::HTMLColorCode color);
+  void addSimpleHandler(char label, uint32_t interval, CRGB color);
   void setPattern(String st);
   void countSwitches();
 
@@ -60,7 +82,7 @@ public:
   void turnAllOn();
   void turnAllOff();
   void resetAll();
-  void setLed(int i, CRGB::HTMLColorCode color);
+  void setLed(int i, CRGB color);
   
 private:
   int _length;

@@ -1,26 +1,22 @@
 #include <LedString.h>
 #define DATA_PIN 2
-#define NUM_LEDS 3
+#define NUM_LEDS 8
 
 LedString myLedString;
 CRGB leds[NUM_LEDS];
 
-int loopLimit = 600;
-int loopCount = 0;
-
-
 class ColorSequence : public LedHandler {
   private:
-    CRGB::HTMLColorCode* colors;
+    CRGB* colors;
     int colorCount;
     int nextColor;
   public:
-    ColorSequence (char label, uint32_t interval, CRGB::HTMLColorCode colors[], int count) : LedHandler(label, interval) {
+    ColorSequence (char label, uint32_t interval, CRGB colors[], int count) : LedHandler(label, interval) {
       this->colors = colors;
       this->colorCount = count;
       this->nextColor = count;
     }
-    void start() {
+    void start(LedString ls) {
       if (this->enabled) {
         this->nextColor++;
         if (this->nextColor >= this->colorCount) {
@@ -28,14 +24,13 @@ class ColorSequence : public LedHandler {
         }
       }
     }
-    void loop(CRGB* leds, int ledNumber) {
-      loopCount++;
-      leds[ledNumber] = this->colors[this->nextColor];
+    void loop(LedString ls, int ledNumber) {
+      ls.leds[ledNumber] = this->colors[this->nextColor];
     }
 };
 
-CRGB::HTMLColorCode colors1[] = { CRGB::Blue, CRGB::Black, CRGB::Green, CRGB::Black };
-CRGB::HTMLColorCode colors2[] = { CRGB::Red, CRGB::Green, CRGB::Blue };
+CRGB colors1[] = { CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::Black };
+CRGB colors2[] = { CRGB::Blue, CRGB::White };
 
 void setup() {
   Serial.begin(115200); while (!Serial) { ; } 
@@ -48,15 +43,14 @@ void setup() {
   Serial.println("Adding custom handlers");
   ColorSequence *cs1 = new ColorSequence('1', 500, colors1, 4);
   myLedString.addHandler(cs1);
-  ColorSequence *cs2 = new ColorSequence('2', 500, colors2, 3);
+  ColorSequence *cs2 = new ColorSequence('2', 500, colors2, 2);
   myLedString.addHandler(cs2);
 
   Serial.println("Calling begin");
-  myLedString.begin("1GB");
+  myLedString.begin("11112222");
 }
 
 void loop() {
-  if (loopCount < loopLimit) {
   myLedString.loop();
-  }
 }
+
