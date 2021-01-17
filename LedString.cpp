@@ -71,53 +71,70 @@ void FlameHandler::loop(LedString ls, int i)
   ls.leds[i] = CHSV(25, 187, value);
 };
 
-/////////////// SwitchGroup
+/////////////// ActiveGroup
 
-SwitchGroup::SwitchGroup(char label, uint32_t minInterval, uint32_t maxInterval, CRGB color)
-  : LedHandler(label, 0)
+ActiveGroup::ActiveGroup(char label, uint32_t minInterval, uint32_t maxInterval, CRGB color, int percentOn)
+    : LedHandler(label, 0)
 {
   this->minInterval = minInterval;
-  this->maxInterval = maxInterval;
+  this->maxInterval = max(maxInterval, minInterval+1);  // in case minInterval = maxInterval
   this->color = color;
+  this->percentOn = percentOn;
 }
 
-void SwitchGroup::setup(LedString ls)
-{
-  // count the switched leds in this group
-  switchCount = 0;
-  countdown = random(switchCount);
-  int len = ls.pattern.length();
-  for (int i = 0; i < len; i++)
+void ActiveGroup::setup(LedString ls) {
+  // count the leds in this group and turn each one on/off randomly according to percentOn
+  groupCount = 0;
+  groupCountOn = 0;
+  for (int i = 0; i < ls.ledCount; i++)
   {
-    if (ls.pattern.charAt(i) == this->label)
-    {
-      switchCount++;
-      ls.leds[i] = color;
+    if (ls.pattern.charAt(i) == this->label) {
+      groupCount++;
+      if (random(0, 100) < percentOn) {
+        ls.leds[i] = color;
+        groupCountOn++;
+      } else {
+        ls.leds[i] = CRGB::Black;
+      }
     }
   }
+  isTurningOn = (percentOn >= 50);  // will be reversed when start() first executes
 }
 
-void SwitchGroup::loop(LedString ls, int ledNumber)
-{
-  // toggle a led when the countdown reaches 0
-  if (countdown > 0)
-  {
-    countdown--;
+void ActiveGroup::start(LedString ls) {
+  isTurningOn = (groupCountOn < (ls.ledCount * percentOn / 100));
+
+  if (isTurningOn) {
+    countdown = random(0, groupCount - groupCountOn);
+  } else {
+    countdown = random(0, groupCountOn);
   }
-  else
-  {
-    if (ls.leds[ledNumber] == color)
+}
+
+void ActiveGroup::loop(LedString ls, int ledNumber) {
+  bool isOn = ls.isOn(ledNumber);
+  if (isTurningOn && !isOn) {
+    if (countdown > 0) {
+      countdown--;
+    } else {
+      ls.leds[ledNumber] = color;
+      groupCountOn++;
+      enabled = false;
+      interval = random(minInterval, maxInterval);
+    }
+  } else if (!isTurningOn && isOn) {
+    if (countdown > 0)
     {
-      ls.leds[ledNumber] = CRGB::Black;
+      countdown--;
     }
     else
     {
-      ls.leds[ledNumber] = color;
+      ls.leds[ledNumber] = CRGB::Black;
+      groupCountOn--;
+      enabled = false;
+      interval = random(minInterval, maxInterval);
     }
-    // set random time and led for next toggle
-    enabled = false; // once we've toggled, disable until the next cycle
-    countdown = random(switchCount);
-    interval = random(minInterval, maxInterval);
+  } else {
   }
 }
 
@@ -140,7 +157,6 @@ int handler_count = 0;
 
 // behaviors is an array of handlers, one for each led;
 LedHandler* behaviors[MAX_LEDS];
-int behavior_count = 0;
 
 void LedString::addHandler(LedHandler* h) {
   // if exists replace
@@ -171,9 +187,9 @@ void LedString::resetAll() {
 
 bool LedString::isOn(int led) {
   return (
-    (leds[led].red == 255) &&
-    (leds[led].green == 255) &&
-    (leds[led].blue == 255));
+    (leds[led].red > 0) ||
+    (leds[led].green > 0) ||
+    (leds[led].blue > 0));
 }
 
 void LedString::turnOn(int i) {
@@ -185,13 +201,13 @@ void LedString::turnOff(int i) {
 }
 
 void LedString::turnAllOn() {
-  for (int i = 0; i < _length; i++) {
+  for (int i = 0; i < ledCount; i++) {
     leds[i] = CRGB::White;
   }
 }
 
 void LedString::turnAllOff() {
-  for (int i = 0; i < _length; i++) {
+  for (int i = 0; i < ledCount; i++) {
     leds[i] = CRGB::Black;
   }
 }
@@ -207,30 +223,6 @@ bool LedString::isEventTime(uint32_t interval, uint32_t &previousTime) {
   }
 }
 
-int numSwitches = 0;
-int switchIndex = 0; 
-int switchIndexToToggle = 0;
-uint32_t nextSwitchTime = 0;
-uint32_t switchInterval = 0;
-
-void checkSwitch(CRGB* leds, int i) {
-  // skip if it's not time to switch
-  if (_time < nextSwitchTime) return;
-  if (switchIndex == switchIndexToToggle) {
-    // toggle this switch, pick another to toggle next, and reset the index
-    if (leds[i].red > 0) {
-      leds[i] = CRGB::Black;
-    } else {
-      leds[i] = CRGB::White;
-    }
-    switchIndexToToggle = random(0, numSwitches);
-    nextSwitchTime = _time + switchInterval;
-    switchIndex = 0;
-  } else {
-      switchIndex++;
-  }
-}
-
 void LedString::addBuiltInHandlers() {
   addSimpleHandler('O', 0, CRGB::Black);    // also used as the dummy handler for unknown pattern chars
   addSimpleHandler('R', 0, CRGB::Red);
@@ -238,48 +230,51 @@ void LedString::addBuiltInHandlers() {
   addSimpleHandler('B', 0, CRGB::Blue);
   addSimpleHandler('Y', 0, CRGB::Yellow);
   addSimpleHandler('W', 0, CRGB::White);
-  FlameHandler *fire = new FlameHandler('F', FLICKER_RATE);
-  addHandler(fire);
+  FlameHandler *fh = new FlameHandler('F', FLICKER_RATE);
+  addHandler(fh);
+  ActiveGroup *ag = new ActiveGroup('A', HABITATION_MIN_INTERVAL, HABITATION_MAX_INTERVAL, CRGB::White, HABITATION_DEFAULT_PERCENT);
+  addHandler(ag);
 }
 
-void LedString::addBehavior(char label) {
+void LedString::addBehavior(char label, int ledNumber) {
   // find the handler for the label and append it to behaviors
   for (int i=0; i<handler_count; i++) {
     if (handlers[i]->label == label) {
-      behaviors[behavior_count++] = handlers[i];
-      return;
+      behaviors[ledNumber] = handlers[i];
+      return;   
     }
   }
-  behaviors[behavior_count++] = handlers[0];  // use dummy handler
+  behaviors[ledNumber] = handlers[0];  // use dummy handler
 }
 
 void LedString::populateBehaviors() {
   // for each character in the pattern add the corresponding handler to the behaviors list
-  behavior_count = 0;
-  for (int i = 0; i < _length; i++) {
+  for (int i = 0; i < ledCount; i++) {
     char label = pattern.charAt(i);
-    addBehavior(label);
+    addBehavior(label, i);
+  }
+}
+
+void LedString::setupHandlers() {
+  for (int i = 0; i < handler_count; i++)
+  {
+    handlers[i]->setup(*this);
   }
 }
 
 void LedString::setPattern(String newPattern) {
   // if new string is longer than original it is truncated;
   // if shorter it is padded with Os to turn off the unused leds.
-  String st = newPattern;
-  // st.replace(" ", "");
-  // st.remove(_length);
-  // st.toUpperCase();
-  //int shortness = _length - st.length();
-  // for (int i=0; i<shortness; i++) {
-  //   st += "O";
-  // }
-  pattern = st;
-  _length = pattern.length();
-  populateBehaviors();
-  for (int i = 0; i < handler_count; i++)
-  {
-    handlers[i]->setup(*this);
+  pattern = newPattern;
+  pattern.replace(" ", "");
+  pattern.remove(ledCount);
+  int shortness = ledCount - pattern.length();
+  for (int i=0; i<shortness; i++) {
+    pattern += "O";
   }
+  pattern.toUpperCase();
+  setupHandlers();
+  populateBehaviors();
 }
 
 void LedString::enableHandlers() {
@@ -295,7 +290,8 @@ void LedString::enableHandlers() {
 }
 
 void LedString::doBehaviors() {
-  for (int i = 0; i < behavior_count; i++) {
+
+  for (int i = 0; i < ledCount; i++) {
     LedHandler* h = behaviors[i];
     if (h->enabled) {
       h->loop(*this, i);
@@ -303,21 +299,22 @@ void LedString::doBehaviors() {
   }
 }
 
-//void LedString::setup(String ledPattern) {
-//  leds = (CRGB*)malloc(_length * sizeof(CRGB));
-//  FastLED.addLeds<WS2811, DATA_PIN, RGB>(leds, _length);
-//  //FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, _length);
+//void LedString::setup(String ledPattern, int ledCount) {
+//  leds = (CRGB*)malloc(ledCount * sizeof(CRGB));
+//  FastLED.addLeds<WS2811, DATA_PIN, RGB>(leds, ledCount);
+//  //FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, ledCount);
 //  setup(ledPattern, leds);
 //}
 
-void LedString::setup(CRGB* ledArray) {
+void LedString::setup(CRGB *ledArray, int numLeds) {
   leds = ledArray;
+  ledCount = numLeds;
   turnAllOff();
   addBuiltInHandlers();
 }
 
-void LedString::begin(String _pattern) {
-  setPattern(_pattern);
+void LedString::begin(String newPattern) {
+  setPattern(newPattern);
 }
 
 void LedString::loop() {

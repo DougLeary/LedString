@@ -1,20 +1,20 @@
 # LedString
-FastLED wrapper to simplify lighting for model towns, castles, villages.
+FastLED wrapper to simplify using LED lighting for model towns, castles, villages.
 
 This wrapper class uses FastLED to set up lighting for buildings in a model town, medieval village, etc. 
 LEDs are animated individually by assigning a predefined behavior to each led. The code can be used with WS2811, WS2812, WS2812B, WS2813, or NEOPIXEL rings and matrices. 
 
 Behavior for individual LEDs is defined using a character string, one character per LED. Blanks can be inserted anywhere for readability, and are ignored.
 
-#### Behaviors
-W: White, always lit
-R: Red, always lit
-G: Green, always lit
-B: Blue, always lit
-Y: Yellow, always lit
-O: Off
-S: Switched on and off semi-randomly to give an appearance of habitation. At a random interval of SWITCH_MIN..SWITCH_MAX milliseconds, one randomly chosen led marked "S" is toggled on or off.
-F: Fire (flickering simulation of a fireplace, torch, etc). Fire LEDs flicker independently of each other.
+#### Built-in Behaviors
+* W: White, always lit
+* R: Red, always lit
+* G: Green, always lit
+* B: Blue, always lit
+* Y: Yellow, always lit
+* O: Off (same as setting the color to Black)
+* S: Switched on and off semi-randomly to give an appearance of habitation. At a random interval of SWITCH_MIN..SWITCH_MAX milliseconds, one randomly chosen led marked "S" is toggled on or off.
+* F: Fire (flickering simulation of a fireplace, torch, etc). Fire LEDs flicker independently of each other.
 
 An application may assign any other single character to a custom behavior, or override any of the standard ones (see example code Custom.ino).
 

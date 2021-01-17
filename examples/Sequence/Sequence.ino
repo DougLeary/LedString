@@ -38,7 +38,7 @@ void setup() {
 
   FastLED.clear();
   FastLED.addLeds<WS2811, DATA_PIN, RGB>(leds, NUM_LEDS);
-  myLedString.setup(leds);
+  myLedString.setup(leds, NUM_LEDS);
 
   Serial.println("Adding custom handlers");
   ColorSequence *cs1 = new ColorSequence('1', 500, colors1, 4);

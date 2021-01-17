@@ -33,16 +33,21 @@ class FlameHandler : public LedHandler {
     virtual void loop(LedString ls, int i);
 };
 
-class SwitchGroup : public LedHandler {
-  private:
-    int switchCount;
+class ActiveGroup : public LedHandler {
+  public:
+    int groupCount;
+    int groupCountOn;
     int countdown;
+    int percentOn;
+    bool isTurningOn;
     CRGB color;
     uint32_t minInterval;
     uint32_t maxInterval;
-  public:
-    SwitchGroup(char label, uint32_t minInterval, uint32_t maxInterval, CRGB color);
+
+//  public:
+    ActiveGroup(char label, uint32_t minInterval, uint32_t maxInterval, CRGB color, int percentOn);
     virtual void setup(LedString ls);
+    virtual void start(LedString ls);
     virtual void loop(LedString ls, int i);
 };
 
@@ -53,7 +58,7 @@ public:
   String pattern;
 
   // min/max brightness range of normal and intense flickers
-  static const int FIRE_MIN = 150; 
+  static const int FIRE_MIN = 150;
   static const int FIRE_MAX = 190; 
   static const int FLICKER_MIN = 130; 
   static const int FLICKER_MAX = 225;  ////// WS28xx
@@ -62,11 +67,13 @@ public:
   static const int FLICKER_RATE = 80;  // ms between brightness changes
   static const int FLICKER_EXTRA = 2;  // when brightness is this close to FIRE_MIN or MAX, FLICKER_MIN or MAX is used
 
-  // timing for switched lights
-  static const uint32_t AVERAGE_SWITCH_INTERVAL = 20000; // desired average ms between toggling a random switched led
-  static const uint32_t MIN_SWITCH_INTERVAL = 5000;      // shortest time between toggling
+  const int HABITATION_MIN_INTERVAL = 2000;     // default interval range for built-in ActiveGroup
+  const int HABITATION_MAX_INTERVAL = 10000;
+  const int HABITATION_DEFAULT_PERCENT = 75;    // default percentage of leds that should be on at any time
 
-  void setup(CRGB* ledArray);
+  int ledCount;
+
+  void setup(CRGB *ledArray, int ledCount);
   void begin(String pattern);
   void loop();
   uint32_t currentTime();
@@ -74,7 +81,6 @@ public:
   void addHandler(LedHandler* h);
   void addSimpleHandler(char label, uint32_t interval, CRGB color);
   void setPattern(String st);
-  void countSwitches();
 
   bool isOn(int led);
   void turnOn(int led);
@@ -85,10 +91,8 @@ public:
   void setLed(int i, CRGB color);
   
 private:
-  int _length;
-
   void addBuiltInHandlers();
-  void addBehavior(char label);
+  void addBehavior(char label, int ledNumber);
   void populateBehaviors();
   bool isEventTime(uint32_t interval, uint32_t &previousTime);
   void setupHandlers();
