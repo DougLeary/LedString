@@ -57,15 +57,13 @@ public:
   CRGB* leds = 0;
   String pattern;
 
-  // min/max brightness range of normal and intense flickers
+  static const int FLICKER_RATE = 80; // ms between brightness changes
+  static const int FLICKER_EXTRA = 2; // when brightness is this close to FIRE_MIN or MAX, FLICKER_MIN or MAX is used
   static const int FIRE_MIN = 150;
   static const int FIRE_MAX = 190; 
   static const int FLICKER_MIN = 130; 
   static const int FLICKER_MAX = 225;  ////// WS28xx
 //  int FIRE_MIN = 80; int FIRE_MAX = 160; int FLICKER_MIN = 10; int FLICKER_MAX = 230;    ////// NEOPIXEL
-
-  static const int FLICKER_RATE = 80;  // ms between brightness changes
-  static const int FLICKER_EXTRA = 2;  // when brightness is this close to FIRE_MIN or MAX, FLICKER_MIN or MAX is used
 
   const int HABITATION_MIN_INTERVAL = 2000;     // default interval range for built-in ActiveGroup
   const int HABITATION_MAX_INTERVAL = 10000;
@@ -87,7 +85,6 @@ public:
   void turnOff(int led);
   void turnAllOn();
   void turnAllOff();
-  void resetAll();
   void setLed(int i, CRGB color);
   
 private:

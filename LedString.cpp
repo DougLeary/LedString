@@ -181,10 +181,6 @@ void LedString::setLed(int i, CRGB color) {
   leds[i] = color;
 }
 
-void LedString::resetAll() {
-  FastLED.clear();
-}
-
 bool LedString::isOn(int led) {
   return (
     (leds[led].red > 0) ||
