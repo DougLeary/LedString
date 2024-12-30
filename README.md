@@ -13,10 +13,10 @@ Behavior for individual LEDs is defined using a character string, one character 
 * B: Blue, always lit
 * Y: Yellow, always lit
 * O: Off (same as setting the color to Black)
-* S: Switched on and off semi-randomly to give an appearance of habitation. At a random interval of SWITCH_MIN..SWITCH_MAX milliseconds, one randomly chosen led marked "S" is toggled on or off.
+* S: Switched on and off semi-randomly to give an appearance of habitation. At a random interval between SWITCH_MIN and SWITCH_MAX milliseconds, one randomly chosen led marked "S" is toggled on or off.
 * F: Fire (flickering simulation of a fireplace, torch, etc). Fire LEDs flicker independently of each other.
 
-An application may assign any other single character to a custom behavior, or override any of the standard ones (see example code Custom.ino).
+An app may assign any other single character to a custom behavior, or override any of the standard ones (see example code Custom.ino).
 
 Example: "WWOFW SSFWO OOWSS FSSSW"
 
@@ -25,13 +25,13 @@ The constant NUM_LEDS must be defined as per the FastLED docs. If the pattern st
 Note: As per FastLED docs the value for DATA_PIN used to call addLeds must be a constant (or multiple constants for multiple led strings). 
 This code works on Arduino and ESP8266.
 
-***** TO DO: FINISH EDITING BEYOND THIS POINT *****
+Since only one "S" node is toggled on or off per interval, the more "S" leds you use, the less often an individual one will be switched. So if you want the appearance of more activity, edit LedString.h and try assigning a lower value for SWITCH_MAX. 
 
-The default hardware is WS2811. To select different hardware you must make two edits: 
-- in LedString.h uncomment the appropriate line to set FIRE_MIN, etc. 
-- in LedString.cpp uncomment the appropriate call to FastLED.addLeds for your hardware. 
+The default hardware is WS2811 or WS2812. To select different hardware you must make two edits: 
+- in LedString.h uncomment the appropriate line to set FIRE_MIN, etc. for your type of leds.
+- in LedString.cpp uncomment the appropriate call to FastLED.addLeds for your type of leds. 
 
-These edits are necessary because of requirements of the FastLED library, which LedString is based on. Due to compile-time optimizations in FastLED, certain values cannot be passed in as parameters. 
+These edits are necessary because of FastLED reqirements, which LedString is based on. Due to compile-time optimizations in FastLED, certain values cannot be passed in as parameters. 
 
 ### Usage Example
 
