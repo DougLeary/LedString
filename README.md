@@ -1,35 +1,42 @@
+## READ THIS FIRST  
+This project has been neglected for several years. The README doesn't include major improvements in adding custom behaviors, and I see a few other omissions, errors and awkward wording. Same with some of the code examples, which I think are cryptic due to lack of comments. I'm in the process of making code improvements, better examples, and bringing the README completely up to date - ETA early Feb 2026. This library isn't designed for spectacular animations or dazzling effects, it's goal is simplicity - to make it dead easy to use FastLED for simple tasks, while retaining some versatility, to control programmable RGB lighting in model buildings, railroad layouts and the like. If this interests you, please check back in February. Thanks! - DL
+
+-------
+
 # LedString
-FastLED wrapper to simplify using LED lighting for model towns, castles, villages.
+A wrapper class for [FastLED](https://fastled.io/) to simplify proammable LED lighting. I use it for a model Christmas town display, but it would work for anything similar - castles, villages, model train layouts, etc. It wasn't designed to generally animate Christmas lights, but who knows, give it a try. LEDString Has been tested with WS2811, WS2812, WS2812B, WS2813, and NEOPIXEL rings and matrices.
 
-This wrapper class uses FastLED to set up lighting for buildings in a model town, medieval village, etc. 
-LEDs are animated individually by assigning a predefined behavior to each led. The code can be used with WS2811, WS2812, WS2812B, WS2813, or NEOPIXEL rings and matrices. 
+Behaviors are assigned to a string of programmable LEDs using a simple text string, one character per LED. Blanks can be included anywhere for readability, and are ignored. For example, the behavior string for two small cottages, each lit by a flickering fire, next to a brightly lit candy store with 3 white leds, could be "F F WWW". This is the same as "FFWWW" but a little more readable. When you edit a long string that defines dozens of leds, blanks make it easier to find the right section.
 
-Behavior for individual LEDs is defined using a character string, one character per LED. Blanks can be inserted anywhere for readability, and are ignored.
+#### Built-in Behaviors  
+**Static Colors**  
+* W: White
+* R: Red
+* G: Green
+* B: Blue
+* Y: Yellow
+* O: Off
 
-#### Built-in Behaviors
-* W: White, always lit
-* R: Red, always lit
-* G: Green, always lit
-* B: Blue, always lit
-* Y: Yellow, always lit
-* O: Off (same as setting the color to Black)
-* S: Switched on and off semi-randomly to give an appearance of habitation. At a random interval between SWITCH_MIN and SWITCH_MAX milliseconds, one randomly chosen led marked "S" is toggled on or off.
-* F: Fire (flickering simulation of a fireplace, torch, etc). Fire LEDs flicker independently of each other.
+**Animated**  
+* F: Fire (a flickering simulation of a fireplace, torch, etc). Fire LEDs flicker independently of each other.
+* A: Active group; leds marked "A" are switched on and off at semi-random times, to create the feel of places being inhabited.
+At a random interval between SWITCH_MIN and SWITCH_MAX milliseconds, one "A" led is randomly chosen and toggled on or off.
 
-An app may assign any other single character to a custom behavior, or override any of the standard ones (see example code Custom.ino).
+**Custom Behaviors**  
+Using the Custom class you can define a custom behavior, assign it a letter, and use that letter to assign the behavior to leds. 
+See [examples/Custom/Custom.ino](https://github.com/DougLeary/LedString/blob/master/examples/Custom/Custom.ino).
+You can even override a built-in behavior by reassigning its letter to a new behavior. 
 
-Example: "WWOFW SSFWO OOWSS FSSSW"
+The constant NUM_LEDS must be defined as per the FastLED docs. If the pattern string (excluding blanks) is longer or shorter than NUM_LEDS, it is truncated or padded with the letter "O" respectively. 
 
-The constant NUM_LEDS must be defined as per the FastLED docs. If the pattern string (excluding blanks) is longer or shorter than this, it is truncated or padded with "O" respectively. 
-
-Note: As per FastLED docs the value for DATA_PIN used to call addLeds must be a constant (or multiple constants for multiple led strings). 
+Note: As per FastLED docs, the value for DATA_PIN used to call addLeds must be a _constant_ (or multiple constants for multiple led strings). 
 This code works on Arduino and ESP8266.
 
 Since only one "S" node is toggled on or off per interval, the more "S" leds you use, the less often an individual one will be switched. So if you want the appearance of more activity, edit LedString.h and try assigning a lower value for SWITCH_MAX. 
 
-The default hardware is WS2811 or WS2812. To select different hardware you must make two edits: 
-- in LedString.h uncomment the appropriate line to set FIRE_MIN, etc. for your type of leds.
-- in LedString.cpp uncomment the appropriate call to FastLED.addLeds for your type of leds. 
+The led type is assumed to be WS2811 or WS2812. To select a different type you must make two edits: 
+- in LedString.h: uncomment the appropriate line to set FIRE_MIN, etc for the type of leds you are using.
+- in LedString.cpp: uncomment the appropriate call to FastLED.addLeds for your type of leds. 
 
 These edits are necessary because of FastLED reqirements, which LedString is based on. Due to compile-time optimizations in FastLED, certain values cannot be passed in as parameters. 
 
